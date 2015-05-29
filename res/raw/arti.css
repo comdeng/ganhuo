@@ -1,0 +1,7 @@
+/*! normalize.css v3.0.2 | MIT License | git.io/normalize */
+html,body{font-family:verdana;font-size:14px;}
+blockquote{  padding: 10px 20px;
+  margin: 0 0 20px;
+  border-left: 5px solid #eee;
+  background:#fcfcfc;
+}

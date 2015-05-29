@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- action items -->
+    <!-- showAsAction默认为never -->
+    <item
+            android:id="@+id/share"
+            android:icon="@android:drawable/ic_menu_share"
+            android:showAsAction="always"
+            android:title="分享"/>
+    <item android:id="@+id/browser"
+          android:icon="@android:drawable/ic_menu_view"
+          android:showAsAction="never"
+          android:title="在浏览器中打开"
+          />
+    <item android:id="@+id/about"
+            android:icon="@android:drawable/menu_frame"
+            android:showAsAction="never"
+            android:title="关于"
+            />
+
+</menu>

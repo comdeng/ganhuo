@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InfoQ中文站</string>
+    <string name="refresh_text">加载失败，点击刷新...</string>
+    <string name="author_label">作者</string>
+    <string name="pubtime_label">发布于</string>
+</resources>
