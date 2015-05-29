@@ -7,21 +7,11 @@
               android:background="@android:color/white"
         >
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <com.tiaoshei.fr.view.TsSwipeRefreshLayout
             android:id="@+id/swipeLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
         <WebView android:layout_width="fill_parent" android:layout_height="fill_parent" android:id="@+id/webView"></WebView>
-    </android.support.v4.widget.SwipeRefreshLayout>
-
-    <TextView android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/refreshBtn"
-            android:text="@string/refresh_text"
-            android:visibility="invisible"
-            android:textColor="@android:color/holo_red_dark"
-            android:textSize="16dp"
-            />
-
+    </com.tiaoshei.fr.view.TsSwipeRefreshLayout>
 </LinearLayout>

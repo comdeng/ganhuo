@@ -1,16 +1,13 @@
 package com.tiaoshei.ganhuo.activity;
 
-import android.text.style.AbsoluteSizeSpan;
 import android.util.Log;
 import android.widget.*;
 import com.tiaoshei.fr.activity.TsActivity;
+import com.tiaoshei.fr.view.TsSwipeRefreshLayout;
 import com.tiaoshei.ganhuo.adapter.ArticleListAdapter;
 import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import com.loopj.android.http.AsyncHttpClient;
@@ -23,15 +20,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefreshListener{
+public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRefreshListener {
     List<Article> list;
     private ListView listView;
-    private SwipeRefreshLayout refreshLayout;
+    private TsSwipeRefreshLayout refreshLayout;
     private String nextUrl;
     private boolean isLoading = false;
-    private int mYDown;
-    private int mLastY;
-    private int mTouchSlop;
 
     private RelativeLayout failureLayout;
     ArticleListAdapter adapter;
@@ -39,12 +33,10 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
     private final String DEFAULT_URL = "http://ganhuo.tiaoshei.com/infoq/?_of=json";
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void initView() {
         this.setContentView(R.layout.my_activity);
 
-        Button retryBtn = (Button)this.findViewById(R.id.retryButton);
+        Button retryBtn = (Button) this.findViewById(R.id.retryButton);
         retryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -55,10 +47,7 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
         });
         failureLayout = (RelativeLayout) this.findViewById(R.id.failureLayout);
 
-
-
-
-        listView = (ListView)this.findViewById(R.id.listView);
+        listView = (ListView) this.findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -76,13 +65,18 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
             }
         });
 
-        refreshLayout = (SwipeRefreshLayout) this.findViewById(R.id.refreshLayout);
+        refreshLayout = (TsSwipeRefreshLayout) this.findViewById(R.id.refreshLayout);
+        refreshLayout.setOnRefreshListener(this);
+        refreshLayout.setColorScheme(
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+        refreshLayout.setmMode(TsSwipeRefreshLayout.Mode.BOTH);
+    }
 
-        ActionBar ab = getActionBar();
-        ab.setDisplayShowHomeEnabled(false);
-
-        mTouchSlop = ViewConfiguration.get(this.getApplicationContext()).getScaledTouchSlop();
-
+    @Override
+    public void loadData() {
         nextUrl = DEFAULT_URL;
 
         if (this.isNetworkAvailable()) {
@@ -92,14 +86,12 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
 
     }
 
-    private void loadUrl()
-    {
+    private void loadUrl() {
         if (isLoading) {
             return;
         }
 
         isLoading = true;
-
 
 
         new android.os.Handler().postDelayed(new Runnable() {
@@ -128,7 +120,7 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
                     if (list == null) {
                         list = new ArrayList<Article>();
                     }
-                    for(int i = 0, l = items.length(); i < l; i++) {
+                    for (int i = 0, l = items.length(); i < l; i++) {
 
                         JSONObject item = items.optJSONObject(i);
                         Article arti = new Article();
@@ -163,28 +155,6 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
         });
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        switch(ev.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                // 按下
-                mYDown = (int) ev.getRawY();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                refreshLayout.setRefreshing(false);
-                // 移动
-                mLastY = (int) ev.getRawY();
-                break;
-            case MotionEvent.ACTION_UP:
-                if (isBottom() && isPullUp()) {
-                    loadUrl();
-                }
-                break;
-        }
-        return super.dispatchTouchEvent(ev);
-    }
-
 
     public void onRefresh() {
         if (this.isNetworkAvailable()) {
@@ -199,24 +169,13 @@ public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefre
         }
     }
 
-    /**
-     * 判断是否到了最底部
-     */
-    private boolean isBottom() {
-
-        if (listView != null && listView.getAdapter() != null) {
-            return listView.getLastVisiblePosition() == (listView.getAdapter().getCount() - 1);
+    public void onLoadMore() {
+        if (this.isNetworkAvailable()) {
+            failureLayout.setVisibility(View.GONE);
+            loadUrl();
+        } else {
+            refreshLayout.setRefreshing(false);
+            failureLayout.setVisibility(View.VISIBLE);
         }
-        return false;
     }
-
-    /**
-     * 是否是上拉操作
-     *
-     * @return
-     */
-    private boolean isPullUp() {
-        return (mYDown - mLastY) >= mTouchSlop;
-    }
-
 }

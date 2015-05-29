@@ -1,26 +1,21 @@
 package com.tiaoshei.ganhuo.activity;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.*;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.tiaoshei.fr.activity.TsActivity;
+import com.tiaoshei.fr.view.TsSwipeRefreshLayout;
 import org.apache.http.Header;
 
 import java.io.*;
@@ -28,51 +23,41 @@ import java.io.*;
 /**
  * Created by ronnie on 15/5/19.
  */
-public class ArticleActivity extends TsActivity implements SwipeRefreshLayout.OnRefreshListener{
+public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.OnRefreshListener{
     private WebView webView;
     private String link;
     private String title;
     private String content;
     private String url;
     private static String layout = null;
-    private SwipeRefreshLayout swipeLayout;
-    private TextView refreshBtn;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private TsSwipeRefreshLayout swipeLayout;
 
-        ActionBar ab = getActionBar();
-        ab.setDisplayShowHomeEnabled(false);
+    @Override
+    public void initView() {
+
         this.setContentView(R.layout.article);
 
-        swipeLayout = (SwipeRefreshLayout)this.findViewById(R.id.swipeLayout);
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                swipeLayout.setRefreshing(true);
-//            }
-//        }, 100);
+        swipeLayout = (TsSwipeRefreshLayout) this.findViewById(R.id.swipeLayout);
+        swipeLayout.setOnRefreshListener(this);
+        swipeLayout.setColorScheme(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
 
-        webView = (WebView)findViewById(R.id.webView);
+        webView = (WebView) findViewById(R.id.webView);
+        webView.getSettings().setDisplayZoomControls(false);
         boolean hasNw = this.isNetworkAvailable();
-        if (hasNw) {
-            webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
-        } else {
-            webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        }
-        refreshBtn = (TextView)findViewById(R.id.refreshBtn);
+//        if (hasNw) {
+//            webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+//        } else {
+//            webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+//        }
 
-        refreshBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                webView.setVisibility(View.VISIBLE);
-                refreshBtn.setVisibility(View.INVISIBLE);
 
-                swipeLayout.setRefreshing(true);
-                loadUrl();
-            }
-        });
+    }
 
+    @Override
+    public void loadData() {
         Intent intent = this.getIntent();
         url = intent.getStringExtra("url");
         link = intent.getStringExtra("origin");
@@ -96,21 +81,8 @@ public class ArticleActivity extends TsActivity implements SwipeRefreshLayout.On
                 super.onPageFinished(view, url);
                 //ArticleActivity.this.setTitle(view.getTitle());
 
-                swipeLayout.setRefreshing(false);
-            }
 
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//                // TODO Auto-generated method stub
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        swipeLayout.setRefreshing(true);
-//                    }
-//                }, 100);
-//                view.loadUrl(url);
-//                return true;
-                return false;
+                swipeLayout.setRefreshing(false);
             }
         });
 
@@ -138,6 +110,7 @@ public class ArticleActivity extends TsActivity implements SwipeRefreshLayout.On
             public void onSuccess(int i, Header[] headers, byte[] bytes) {
                 content = content
                         .replace("{{.content}}", new String(bytes));
+
                 webView.loadDataWithBaseURL(url, content, "text/html; charset=utf-8", null, null);
             }
 
@@ -219,12 +192,11 @@ public class ArticleActivity extends TsActivity implements SwipeRefreshLayout.On
 
     public void onRefresh()
     {
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                webView.loadUrl(webView.getUrl());
-//            }
-//        }, 100);
         loadUrl();
+    }
+
+    public void onLoadMore()
+    {
+
     }
 }
