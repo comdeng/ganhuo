@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.tiaoshei.fr.activity.TsActivity;
 import org.apache.http.Header;
 
 import java.io.*;
@@ -27,11 +28,11 @@ import java.io.*;
 /**
  * Created by ronnie on 15/5/19.
  */
-public class ArticleActivity extends Activity implements SwipeRefreshLayout.OnRefreshListener{
+public class ArticleActivity extends TsActivity implements SwipeRefreshLayout.OnRefreshListener{
     private WebView webView;
     private String link;
     private String title;
-    private String summary;
+    private String content;
     private String url;
     private static String layout = null;
     private SwipeRefreshLayout swipeLayout;
@@ -53,7 +54,8 @@ public class ArticleActivity extends Activity implements SwipeRefreshLayout.OnRe
 //        }, 100);
 
         webView = (WebView)findViewById(R.id.webView);
-        if (this.isNetworkAvailable(this)) {
+        boolean hasNw = this.isNetworkAvailable();
+        if (hasNw) {
             webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         } else {
             webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
@@ -74,20 +76,25 @@ public class ArticleActivity extends Activity implements SwipeRefreshLayout.OnRe
         Intent intent = this.getIntent();
         url = intent.getStringExtra("url");
         link = intent.getStringExtra("origin");
-        title = intent.getStringExtra("title");
-        summary = intent.getStringExtra("summary");
 
+        title = intent.getStringExtra("title");
         this.setTitle(title);
 
         if (layout == null) {
             layout = getFromRaw("/assets/article.layout.html");
         }
+        content = layout
+                .replace("{{.title}}", title)
+                .replace("{{.author}}", intent.getStringExtra("author"))
+                .replace("{{.pubtime}}", intent.getStringExtra("pubtime"))
+                .replace("{{.reply}}", String.format("%d", intent.getIntExtra("reply", 0)))
+        ;
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                ArticleActivity.this.setTitle(view.getTitle());
+                //ArticleActivity.this.setTitle(view.getTitle());
 
                 swipeLayout.setRefreshing(false);
             }
@@ -112,7 +119,7 @@ public class ArticleActivity extends Activity implements SwipeRefreshLayout.OnRe
 
     public void loadUrl()
     {
-        if (!this.isNetworkAvailable(this) ) {
+        if (!this.isNetworkAvailable() ) {
             swipeLayout.setRefreshing(false);
             Toast.makeText(getApplicationContext(), "网络中断", Toast.LENGTH_SHORT).show();
             return;
@@ -129,12 +136,9 @@ public class ArticleActivity extends Activity implements SwipeRefreshLayout.OnRe
         client.get(url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int i, Header[] headers, byte[] bytes) {
-                String content = new String(bytes);
-                content = layout
-                        .replace("{{.title}}", title)
-                        .replace("{{.description}}", summary)
-                        .replace("{{.content}}", content);
-                webView.loadData(content, "text/html; charset=utf-8", null);
+                content = content
+                        .replace("{{.content}}", new String(bytes));
+                webView.loadDataWithBaseURL(url, content, "text/html; charset=utf-8", null, null);
             }
 
             @Override
@@ -222,43 +226,5 @@ public class ArticleActivity extends Activity implements SwipeRefreshLayout.OnRe
 //            }
 //        }, 100);
         loadUrl();
-    }
-
-    /**
-     * 检查当前网络是否可用
-     *
-     * @return
-     */
-
-    public boolean isNetworkAvailable(Activity activity)
-    {
-        Context context = activity.getApplicationContext();
-        // 获取手机所有连接管理对象（包括对wi-fi,net等连接的管理）
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        if (connectivityManager == null)
-        {
-            return false;
-        }
-        else
-        {
-            // 获取NetworkInfo对象
-            NetworkInfo[] networkInfo = connectivityManager.getAllNetworkInfo();
-
-            if (networkInfo != null && networkInfo.length > 0)
-            {
-                for (int i = 0; i < networkInfo.length; i++)
-                {
-                    System.out.println(i + "===状态===" + networkInfo[i].getState());
-                    System.out.println(i + "===类型===" + networkInfo[i].getTypeName());
-                    // 判断当前网络状态是否为连接状态
-                    if (networkInfo[i].getState() == NetworkInfo.State.CONNECTED)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 }

@@ -1,5 +1,9 @@
 package com.tiaoshei.ganhuo.activity;
 
+import android.text.style.AbsoluteSizeSpan;
+import android.util.Log;
+import android.widget.*;
+import com.tiaoshei.fr.activity.TsActivity;
 import com.tiaoshei.ganhuo.adapter.ArticleListAdapter;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -9,8 +13,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.tiaoshei.ganhuo.model.Article;
@@ -21,7 +23,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyActivity extends Activity {
+public class MyActivity extends TsActivity implements SwipeRefreshLayout.OnRefreshListener{
     List<Article> list;
     private ListView listView;
     private SwipeRefreshLayout refreshLayout;
@@ -31,11 +33,30 @@ public class MyActivity extends Activity {
     private int mLastY;
     private int mTouchSlop;
 
+    private RelativeLayout failureLayout;
+    ArticleListAdapter adapter;
+
+    private final String DEFAULT_URL = "http://ganhuo.tiaoshei.com/infoq/?_of=json";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         this.setContentView(R.layout.my_activity);
+
+        Button retryBtn = (Button)this.findViewById(R.id.retryButton);
+        retryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (MyActivity.this.isNetworkAvailable()) {
+                    loadUrl();
+                }
+            }
+        });
+        failureLayout = (RelativeLayout) this.findViewById(R.id.failureLayout);
+
+
+
 
         listView = (ListView)this.findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -44,23 +65,30 @@ public class MyActivity extends Activity {
                 Article article = list.get(i);
                 Intent intent = new Intent(MyActivity.this, ArticleActivity.class);
                 intent.putExtra("url", article.get__LINK__());
+                Log.v("hapn", article.get__LINK__());
                 intent.putExtra("origin", article.getUrl());
                 intent.putExtra("title", article.getTitle());
                 intent.putExtra("summary", article.getSummary());
+                intent.putExtra("author", article.getAuthor());
+                intent.putExtra("pubtime", article.getTime());
+                intent.putExtra("reply", article.getReply());
                 startActivity(intent);
             }
         });
 
         refreshLayout = (SwipeRefreshLayout) this.findViewById(R.id.refreshLayout);
-        refreshLayout.setRefreshing(true);
 
         ActionBar ab = getActionBar();
         ab.setDisplayShowHomeEnabled(false);
 
         mTouchSlop = ViewConfiguration.get(this.getApplicationContext()).getScaledTouchSlop();
 
-        nextUrl = "http://ganhuo.tiaoshei.com/infoq/?_of=json";
-        loadUrl();
+        nextUrl = DEFAULT_URL;
+
+        if (this.isNetworkAvailable()) {
+            failureLayout.setVisibility(View.GONE);
+            loadUrl();
+        }
 
     }
 
@@ -69,13 +97,26 @@ public class MyActivity extends Activity {
         if (isLoading) {
             return;
         }
+
         isLoading = true;
+
+
+
+        new android.os.Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                refreshLayout.setRefreshing(true);
+            }
+        }, 100);
 
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(nextUrl, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
+
+                failureLayout.setVisibility(View.GONE);
+                refreshLayout.setRefreshing(false);
 
                 if (response.optString("err").equals("hapn.ok")) {
                     JSONObject data = response.optJSONObject("data");
@@ -96,16 +137,22 @@ public class MyActivity extends Activity {
                         arti.setSummary(item.optString("summary"));
                         arti.setTime(item.optString("time"));
                         arti.setUrl(item.optString("url"));
+                        arti.setReply(item.optInt("reply"));
                         arti.setAuthor(item.optJSONObject("author").optString("name"));
 
                         list.add(arti);
                     }
 
-                    ArticleListAdapter adapter = new ArticleListAdapter(MyActivity.this);
-                    adapter.setData(list);
-                    listView.setAdapter(adapter);
+                    if (adapter == null) {
+                        adapter = new ArticleListAdapter(MyActivity.this);
+                        adapter.setData(list);
+                        listView.setAdapter(adapter);
+                    } else {
+                        //adapter.setData(list);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
-                refreshLayout.setRefreshing(false);
+
             }
 
             @Override
@@ -125,6 +172,7 @@ public class MyActivity extends Activity {
                 break;
 
             case MotionEvent.ACTION_MOVE:
+                refreshLayout.setRefreshing(false);
                 // 移动
                 mLastY = (int) ev.getRawY();
                 break;
@@ -135,6 +183,20 @@ public class MyActivity extends Activity {
                 break;
         }
         return super.dispatchTouchEvent(ev);
+    }
+
+
+    public void onRefresh() {
+        if (this.isNetworkAvailable()) {
+            failureLayout.setVisibility(View.GONE);
+            nextUrl = DEFAULT_URL;
+            adapter = null;
+
+            loadUrl();
+        } else {
+            refreshLayout.setRefreshing(false);
+            failureLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     /**

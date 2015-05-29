@@ -8,6 +8,10 @@
               android:paddingRight="5dp"
               android:layout_height="match_parent">
 
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:id="@+id/failureLayout">
+        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="载入失败，点击重试..." android:id="@+id/retryButton"/>
+    </RelativeLayout>
+
     <android.support.v4.widget.SwipeRefreshLayout android:layout_width="match_parent" android:layout_height="match_parent" android:id="@+id/refreshLayout">
 
     <ListView
