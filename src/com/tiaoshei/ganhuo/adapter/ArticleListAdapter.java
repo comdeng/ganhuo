@@ -1,6 +1,7 @@
 package com.tiaoshei.ganhuo.adapter;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +49,11 @@ public class ArticleListAdapter extends BaseAdapter {
         holder.title.setText(item.getTitle());
         holder.summary.setText(item.getSummary());
         holder.pubtime.setText(item.getTime());
-        holder.author.setText(item.getAuthor());
+        if (item.getAuthor().indexOf("&") != -1) {
+            holder.author.setText(Html.fromHtml(item.getAuthor()));
+        } else {
+            holder.author.setText(item.getAuthor());
+        }
 
         return view;
     }
