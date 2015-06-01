@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.*;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -12,6 +14,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.tiaoshei.fr.activity.TsActivity;
 import com.tiaoshei.fr.view.TsSwipeRefreshLayout;
+import com.tiaoshei.ganhuo.model.Article;
 import org.apache.http.Header;
 
 import java.io.*;
@@ -23,9 +26,7 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
     private WebView webView;
     private String link;
     private String title;
-    private String content;
-    private String url;
-    private static String layout = null;
+    private String artiUrl;
     private TsSwipeRefreshLayout swipeLayout;
 
     @Override
@@ -42,12 +43,7 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
 
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setDisplayZoomControls(false);
-        boolean hasNw = this.isNetworkAvailable();
-//        if (hasNw) {
-//            webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
-//        } else {
-//            webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-//        }
+        webView.getSettings().setJavaScriptEnabled(true);
 
 
     }
@@ -55,28 +51,40 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
     @Override
     public void loadData() {
         Intent intent = this.getIntent();
-        url = intent.getStringExtra("url");
+        artiUrl = intent.getStringExtra("url");
         link = intent.getStringExtra("origin");
 
         title = intent.getStringExtra("title");
         this.setTitle(title);
 
-        if (layout == null) {
-            layout = getFromRaw("/assets/article.layout.html");
-        }
-        content = layout
-                .replace("{{.title}}", title)
-                .replace("{{.author}}", intent.getStringExtra("author"))
-                .replace("{{.pubtime}}", intent.getStringExtra("pubtime"))
-                .replace("{{.reply}}", String.format("%d", intent.getIntExtra("reply", 0)))
-        ;
-
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                //ArticleActivity.this.setTitle(view.getTitle());
+                ArticleActivity.this.setTitle(view.getTitle());
 
+                swipeLayout.setRefreshing(false);
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                if (url.indexOf("http://www.infoq.com/cn/articles/") == 0) {
+                    url = "http://ganhuo.tiaoshei.com/infoq/arti/?url=" + url;
+                    webView.loadUrl(url);
+
+                    return null;
+                } else if (url.indexOf("http://www.infoq.om/cn/news/") == 0) {
+                    url = "http://ganhuo.tiaoshei.com/infoq/arti/?url=" + url;
+                    view.loadUrl(url);
+                    return null;
+                }
+
+                return super.shouldInterceptRequest(view, url);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                super.onReceivedError(view, errorCode, description, failingUrl);
 
                 swipeLayout.setRefreshing(false);
             }
@@ -87,10 +95,11 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
 
     public void loadUrl()
     {
-        if (!this.isNetworkAvailable() ) {
-            swipeLayout.setRefreshing(false);
-            Toast.makeText(getApplicationContext(), "网络中断", Toast.LENGTH_SHORT).show();
-            return;
+        boolean hasNw = this.isNetworkAvailable();
+        if (hasNw) {
+            webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+        } else {
+            webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         }
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -99,23 +108,7 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
             }
         }, 100);
 
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.setTimeout(10);
-        client.get(url, new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int i, Header[] headers, byte[] bytes) {
-                content = content
-                        .replace("{{.content}}", new String(bytes));
-
-                webView.loadDataWithBaseURL(url, content, "text/html; charset=utf-8", null, null);
-            }
-
-            @Override
-            public void onFailure(int i, Header[] headers, byte[] bytes, Throwable throwable) {
-                swipeLayout.setRefreshing(false);
-                Toast.makeText(getApplicationContext(), "载入失败", Toast.LENGTH_SHORT).show();
-            }
-        });
+        webView.loadUrl(artiUrl);
     }
 
     @Override
@@ -127,27 +120,7 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
         return super.onKeyDown(keyCode, event);
     }
 
-    /**
-     * 获取原始内容
-     * @param path
-     * @return
-     */
-    public String getFromRaw(String path){
-        try {
-            InputStream is = getClass().getResourceAsStream(path);
-            ByteArrayOutputStream bs= new ByteArrayOutputStream();
-            int ch;
-            while ( (ch = is.read()) != -1) {
-                bs.write(ch);
-            }
-            String result = bs.toString();
-            bs.close();
-            return result;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
-        }
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

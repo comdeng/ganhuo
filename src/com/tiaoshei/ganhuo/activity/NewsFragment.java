@@ -1,8 +1,11 @@
 package com.tiaoshei.ganhuo.activity;
 
+import android.app.Fragment;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.widget.*;
-import com.tiaoshei.fr.activity.TsActivity;
 import com.tiaoshei.fr.view.TsSwipeRefreshLayout;
 import com.tiaoshei.ganhuo.adapter.ArticleListAdapter;
 import android.content.Intent;
@@ -17,7 +20,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRefreshListener {
+public class NewsFragment extends Fragment implements TsSwipeRefreshLayout.OnRefreshListener {
     List<Article> list;
     private ListView listView;
     private TsSwipeRefreshLayout refreshLayout;
@@ -27,29 +30,48 @@ public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRef
     private RelativeLayout failureLayout;
     ArticleListAdapter adapter;
 
-    private final String DEFAULT_URL = "http://ganhuo.tiaoshei.com/infoq/?_of=json";
+    private final String DEFAULT_URL = "http://ganhuo.tiaoshei.com/infoq/news/?_of=json";
+
+    private MainActivity pActivity = null;
+    private View myView;
 
     @Override
-    public void initView() {
-        this.setContentView(R.layout.my_activity);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (myView == null) {
+            myView = inflater.inflate(R.layout.my_activity, container, false);
+        }
+        return myView;
+    }
 
-        Button retryBtn = (Button) this.findViewById(R.id.retryButton);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (list != null) {
+            return;
+        }
+
+        pActivity = (MainActivity)this.getActivity();
+
+        failureLayout = (RelativeLayout) pActivity.findViewById(R.id.failureLayout);
+
+        Button retryBtn = (Button) pActivity.findViewById(R.id.retryButton);
         retryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MyActivity.this.isNetworkAvailable()) {
+                if (pActivity.isNetworkAvailable()) {
                     loadUrl();
                 }
             }
         });
-        failureLayout = (RelativeLayout) this.findViewById(R.id.failureLayout);
 
-        listView = (ListView) this.findViewById(R.id.listView);
+
+        listView = (ListView) pActivity.findViewById(R.id.listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Article article = list.get(i);
-                Intent intent = new Intent(MyActivity.this, ArticleActivity.class);
+                Intent intent = new Intent(pActivity, ArticleActivity.class);
                 intent.putExtra("url", article.get__LINK__());
                 Log.v("hapn", article.get__LINK__());
                 intent.putExtra("origin", article.getUrl());
@@ -62,7 +84,7 @@ public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRef
             }
         });
 
-        refreshLayout = (TsSwipeRefreshLayout) this.findViewById(R.id.refreshLayout);
+        refreshLayout = (TsSwipeRefreshLayout) pActivity.findViewById(R.id.refreshLayout);
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setColorScheme(
                 android.R.color.holo_blue_bright,
@@ -70,13 +92,11 @@ public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRef
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
         refreshLayout.setmMode(TsSwipeRefreshLayout.Mode.BOTH);
-    }
 
-    @Override
-    public void loadData() {
+
         nextUrl = DEFAULT_URL;
 
-        if (this.isNetworkAvailable()) {
+        if (pActivity.isNetworkAvailable()) {
             failureLayout.setVisibility(View.GONE);
             loadUrl();
         }
@@ -133,7 +153,7 @@ public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRef
                     }
 
                     if (adapter == null) {
-                        adapter = new ArticleListAdapter(MyActivity.this);
+                        adapter = new ArticleListAdapter(pActivity);
                         adapter.setData(list);
                         listView.setAdapter(adapter);
                     } else {
@@ -154,7 +174,7 @@ public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRef
 
 
     public void onRefresh() {
-        if (this.isNetworkAvailable()) {
+        if (pActivity.isNetworkAvailable()) {
             failureLayout.setVisibility(View.GONE);
             nextUrl = DEFAULT_URL;
             adapter = null;
@@ -167,7 +187,7 @@ public class MyActivity extends TsActivity implements TsSwipeRefreshLayout.OnRef
     }
 
     public void onLoadMore() {
-        if (this.isNetworkAvailable()) {
+        if (pActivity.isNetworkAvailable()) {
             failureLayout.setVisibility(View.GONE);
             loadUrl();
         } else {

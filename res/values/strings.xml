@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">InfoQ中文站</string>
+    <string name="app_name">干货</string>
     <string name="refresh_text">加载失败，点击刷新...</string>
     <string name="author_label">作者</string>
     <string name="pubtime_label">发布于</string>
+    <string name="tab_news">新闻</string>
+    <string name="tab_article">文章</string>
+    <string name="tab_presentation">演讲</string>
 </resources>
