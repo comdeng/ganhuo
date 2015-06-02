@@ -1,5 +1,6 @@
-package com.tiaoshei.ganhuo.activity;
+package com.tiaoshei.ganhuo.fragment;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +14,11 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.tiaoshei.fr.view.TsAnimateFirstDisplayListener;
 import com.tiaoshei.fr.view.TsSwipeRefreshLayout;
+import com.tiaoshei.ganhuo.R;
+import com.tiaoshei.ganhuo.activity.ArticleActivity;
+import com.tiaoshei.ganhuo.activity.MainActivity;
 import com.tiaoshei.ganhuo.adapter.ArticleListAdapter;
 import com.tiaoshei.ganhuo.model.Article;
 import org.apache.http.Header;
@@ -109,6 +114,12 @@ public class ArticleFragment extends Fragment  implements TsSwipeRefreshLayout.O
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        TsAnimateFirstDisplayListener.displayedImages.clear();
+    }
+
     private void loadUrl() {
         if (isLoading) {
             return;
@@ -154,6 +165,7 @@ public class ArticleFragment extends Fragment  implements TsSwipeRefreshLayout.O
                         arti.setUrl(item.optString("url"));
                         arti.setReply(item.optInt("reply"));
                         arti.setAuthor(item.optJSONObject("author").optString("name"));
+                        arti.setCover(item.optString("cover"));
 
                         list.add(arti);
                     }

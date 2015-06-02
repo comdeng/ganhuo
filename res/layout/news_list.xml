@@ -31,7 +31,7 @@
               android:textSize="13dp"
               android:padding="4dp"
               android:textColor="@color/summary_color"
-              android:maxLines="3"
+              android:maxLines="4"
               android:ellipsize="end"
 
             />

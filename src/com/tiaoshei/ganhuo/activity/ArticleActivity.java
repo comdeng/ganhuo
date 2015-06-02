@@ -78,8 +78,7 @@ public class ArticleActivity extends TsActivity implements TsSwipeRefreshLayout.
                     view.loadUrl(url);
                     return null;
                 }
-
-                return super.shouldInterceptRequest(view, url);
+                return null;
             }
 
             @Override

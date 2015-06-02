@@ -1,7 +1,6 @@
 package com.tiaoshei.ganhuo.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,22 +10,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.tiaoshei.fr.view.TsAnimateFirstDisplayListener;
-import com.tiaoshei.ganhuo.activity.R;
+import com.tiaoshei.ganhuo.R;
 import com.tiaoshei.ganhuo.model.Article;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by ronnie on 15/5/29.
  */
-public class ArticleListAdapter extends BaseAdapter {
+public class PresentationListAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     private List<Article> list;
 
@@ -34,7 +29,7 @@ public class ArticleListAdapter extends BaseAdapter {
 
     private DisplayImageOptions options;
 
-    public ArticleListAdapter(Context ctx) {
+    public PresentationListAdapter(Context ctx) {
         this.mInflater = LayoutInflater.from(ctx);
 
         options = new DisplayImageOptions.Builder()
@@ -59,7 +54,7 @@ public class ArticleListAdapter extends BaseAdapter {
         ViewHolder holder;
 
         if (view == null) {
-            view = this.mInflater.inflate(R.layout.article_list, null);
+            view = this.mInflater.inflate(R.layout.presentation_list, null);
             holder = new ViewHolder();
             holder.author = (TextView)view.findViewById(R.id.author);
             holder.pubtime = (TextView)view.findViewById(R.id.pubtime);

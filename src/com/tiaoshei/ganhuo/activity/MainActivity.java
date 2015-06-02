@@ -1,9 +1,12 @@
 package com.tiaoshei.ganhuo.activity;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import com.tiaoshei.fr.activity.TsActivity;
 import com.tiaoshei.fr.view.TsTabListener;
+import com.tiaoshei.ganhuo.R;
+import com.tiaoshei.ganhuo.fragment.ArticleFragment;
+import com.tiaoshei.ganhuo.fragment.NewsFragment;
+import com.tiaoshei.ganhuo.fragment.PresentationFragment;
 
 /**
  * Created by ronnie on 15/6/1.
@@ -13,7 +16,7 @@ public class MainActivity extends TsActivity {
     public void initView() {
         ActionBar ab = this.getActionBar();
         ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        ab.setDisplayShowTitleEnabled(false);
+        //ab.setDisplayShowTitleEnabled(false);
         ab.setDisplayHomeAsUpEnabled(false);
 
         ActionBar.Tab tab = ab.newTab().setText(R.string.tab_news).setTabListener(new TsTabListener<NewsFragment>(this, "news", NewsFragment.class));

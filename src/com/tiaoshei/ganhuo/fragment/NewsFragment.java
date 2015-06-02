@@ -1,4 +1,4 @@
-package com.tiaoshei.ganhuo.activity;
+package com.tiaoshei.ganhuo.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -7,11 +7,15 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.tiaoshei.fr.view.TsSwipeRefreshLayout;
+import com.tiaoshei.ganhuo.R;
+import com.tiaoshei.ganhuo.activity.ArticleActivity;
+import com.tiaoshei.ganhuo.activity.MainActivity;
 import com.tiaoshei.ganhuo.adapter.ArticleListAdapter;
 import android.content.Intent;
 import android.view.View;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.tiaoshei.ganhuo.adapter.NewsListAdapter;
 import com.tiaoshei.ganhuo.model.Article;
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -28,7 +32,7 @@ public class NewsFragment extends Fragment implements TsSwipeRefreshLayout.OnRef
     private boolean isLoading = false;
 
     private RelativeLayout failureLayout;
-    ArticleListAdapter adapter;
+    NewsListAdapter adapter;
 
     private final String DEFAULT_URL = "http://ganhuo.tiaoshei.com/infoq/news/?_of=json";
 
@@ -153,7 +157,7 @@ public class NewsFragment extends Fragment implements TsSwipeRefreshLayout.OnRef
                     }
 
                     if (adapter == null) {
-                        adapter = new ArticleListAdapter(pActivity);
+                        adapter = new NewsListAdapter(pActivity);
                         adapter.setData(list);
                         listView.setAdapter(adapter);
                     } else {

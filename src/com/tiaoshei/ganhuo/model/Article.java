@@ -97,4 +97,14 @@ public class Article {
 
     private String time;
     private int reply;
+
+    public String getCover() {
+        return cover;
+    }
+
+    public void setCover(String cover) {
+        this.cover = cover;
+    }
+
+    private String cover;
 }
